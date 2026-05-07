@@ -244,25 +244,20 @@ body {
   padding-right: 8px;
 }
 
-/* master 分组行 */
-.ag-theme-alpine .ag-row.ag-row-level-0 {
+/* 分组行 */
+.ag-theme-alpine .ag-row-group {
   background-color: #f1f5f9 !important;
   font-weight: 600;
 }
-.ag-theme-alpine .ag-row.ag-row-level-0:hover {
+.ag-theme-alpine .ag-row-group:hover {
   background-color: #e2e8f0 !important;
 }
-
-/* detail 区域：移除左右 padding 保证子表列与主表对齐 */
-.ag-theme-alpine .ag-details-row {
-  padding: 0 !important;
-  background: #fafbfc;
+/* 分组行中非数值列显示灰色 */
+.ag-theme-alpine .ag-row-group .ag-cell {
+  color: #94a3b8;
 }
 
-/* 详情表格行 hover */
-.ag-theme-alpine .ag-details-row .ag-row:hover {
-  background-color: #f8fafc !important;
-}
+/* 去除滚动条最小宽度限制 */
 .ag-body-vertical-scroll-viewport {
   min-width: 0 !important;
 }
@@ -272,9 +267,18 @@ body {
   border-right: 2px solid #cbd5e1 !important;
 }
 
+/* 明细行 hover */
+.ag-theme-alpine .ag-row:not(.ag-row-group):hover {
+  background-color: #f8fafc !important;
+}
+
 /* 正负数颜色 */
 .cell-positive { color: #16a34a !important; }
 .cell-negative { color: #dc2626 !important; }
+
+/* 分组行数值列保持正负数颜色 */
+.ag-theme-alpine .ag-row-group .cell-positive { color: #16a34a !important; }
+.ag-theme-alpine .ag-row-group .cell-negative { color: #dc2626 !important; }
 
 /* 汇总行空值样式 */
 .cell-dash { color: #94a3b8 !important; }

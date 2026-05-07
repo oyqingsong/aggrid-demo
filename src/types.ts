@@ -1,12 +1,13 @@
 export interface Position {
   id: number
-  assetType: string
-  investType: string
+  assetType: string         // 证券分类: 碳现货/股票/债券/互换/期权
   assetCode: string
   assetName: string
-  counterparty: string
-  account: string
+  counterparty: string      // 证券二级分类
+  investType: string        // 管理证券账户: 组合1/组合2
+  account: string           // 证券账户
   currency: string
+  positionType: string      // 持仓分类: 普通
   qtySod: number
   qtyIntra: number
   qtyEod: number
@@ -15,24 +16,4 @@ export interface Position {
   accruedInt: number
   marketValue: number
   pnl: number
-}
-
-/** 汇总行 — 与 Position 字段对齐，保证主子表列一致 */
-export interface GroupSummary {
-  assetType: string
-  /** 对应 detail 的 assetCode 列位置，展示 "XX 汇总" */
-  assetCode: string
-  counterparty: string
-  assetName: string
-  account: string
-  currency: string
-  qtySod: number
-  qtyIntra: number
-  qtyEod: number
-  cost: number
-  price: number | null
-  accruedInt: number
-  marketValue: number
-  pnl: number
-  rowCount: number
 }
