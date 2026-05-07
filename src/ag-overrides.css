@@ -278,3 +278,15 @@ body {
 
 /* 汇总行空值样式 */
 .cell-dash { color: #94a3b8 !important; }
+
+/* 分组行数值列可点击排序 */
+.ag-theme-alpine .ag-row.row-group .ag-cell {
+  cursor: pointer;
+}
+.ag-theme-alpine .ag-row.row-group .ag-cell:first-child {
+  cursor: pointer;
+}
+/* 排序激活的单元格高亮 */
+.ag-theme-alpine .ag-row.row-group .ag-cell.sort-active {
+  font-weight: 700;
+}

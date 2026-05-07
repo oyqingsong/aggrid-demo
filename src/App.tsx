@@ -1,9 +1,9 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import type { ColDef, ICellRendererParams, ValueFormatterParams, CellClassParams, PostSortRowsParams } from 'ag-grid-community'
+import type { ColDef, ICellRendererParams, ValueFormatterParams, CellClassParams, CellClickedEvent } from 'ag-grid-community'
 import { AllCommunityModule, ModuleRegistry, themeQuartz } from 'ag-grid-community'
 import { generateMockData, buildGroupedRows, ALL_ACCOUNTS, ALL_ASSET_TYPES, ALL_INVEST_ACCOUNTS, ASSET_TO_COUNTERPARTY } from './data'
-import type { Row, GroupRowData } from './types'
+import type { Row, GroupRowData, DetailRowData } from './types'
 import './ag-overrides.css'
 
 ModuleRegistry.registerModules([AllCommunityModule])
@@ -103,21 +103,39 @@ function GroupCellRenderer(props: ICellRendererParams<GroupRowData>) {
   )
 }
 
+type SortState = Record<string, { colId: string; sort: 'asc' | 'desc' }>
+
 // ─── 列定义 ──────────────────────────────────────────
 function buildColumns(unit: number): ColDef<Row>[] {
   const num = (f: string, h: string, w = 110, frac = 2): ColDef<Row> => ({
-    field: f as keyof Row, headerName: h, width: w, sortable: true, resizable: true, type: 'numericColumn',
-    valueFormatter: (p: ValueFormatterParams<Row>) => formatNum(p.value as number | null, unit, frac),
+    field: f as keyof Row, headerName: h, width: w, sortable: false, resizable: true, type: 'numericColumn',
+    valueFormatter: (p: ValueFormatterParams<Row>) => {
+      let text = formatNum(p.value as number | null, unit, frac)
+      const row = p.data as Row | undefined
+      if (row?.kind === 'group') {
+        const sortState = (p.context?.groupSortState as SortState | undefined)?.[row.assetType]
+        if (sortState && sortState.colId === f) {
+          text += sortState.sort === 'desc' ? ' ▼' : ' ▲'
+        }
+      }
+      return text
+    },
     cellClass: (p: CellClassParams<Row>) => {
       const row = p.data as Row | undefined
       const v = p.value
-      if (v == null || (row?.kind === 'group' && f === 'price')) return 'cell-dash'
-      return v > 0 ? 'cell-positive' : v < 0 ? 'cell-negative' : ''
+      const classes: string[] = []
+      if (v == null || (row?.kind === 'group' && f === 'price')) classes.push('cell-dash')
+      else classes.push(v > 0 ? 'cell-positive' : 'cell-negative')
+      if (row?.kind === 'group') {
+        const sortState = (p.context?.groupSortState as SortState | undefined)?.[row.assetType]
+        if (sortState && sortState.colId === f) classes.push('sort-active')
+      }
+      return classes.join(' ')
     },
   })
 
   const txt = (f: string, h: string, w: number): ColDef<Row> =>
-    ({ field: f as keyof Row, headerName: h, width: w, sortable: true, resizable: true,
+    ({ field: f as keyof Row, headerName: h, width: w, sortable: false, resizable: true,
       cellClass: (p: CellClassParams<Row>) => {
         const row = p.data as Row | undefined
         if (row?.kind === 'group' && !(p.value)) return 'cell-dash'
@@ -128,7 +146,7 @@ function buildColumns(unit: number): ColDef<Row>[] {
   return [
     {
       field: 'assetCode', headerName: '资产代码', pinned: 'left', width: 240,
-      sortable: true, resizable: true,
+      sortable: false, resizable: true,
       cellRenderer: GroupCellRenderer,
       valueFormatter: (p: ValueFormatterParams<Row>) => {
         const row = p.data as Row | undefined
@@ -146,7 +164,7 @@ function buildColumns(unit: number): ColDef<Row>[] {
     num('qtyEod', '数量(EOD)'),
     num('cost', '成本', 90),
     {
-      field: 'price', headerName: '估值价格', width: 90, sortable: true, resizable: true, type: 'numericColumn',
+      field: 'price', headerName: '估值价格', width: 90, sortable: false, resizable: true, type: 'numericColumn',
       valueFormatter: (p: ValueFormatterParams<Row>) => p.value != null ? formatNum(p.value as number, unit, 4) : '—',
       cellClass: (p: CellClassParams<Row>) => p.value != null ? '' : 'cell-dash',
     },
@@ -164,6 +182,7 @@ export default function App() {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
     new Set(['碳现货', '股票', '债券', '互换', '期权'])
   )
+  const [groupSortState, setGroupSortState] = useState<SortState>({})
   const unitDiv = UNITS[unit] || 1
 
   const allData = useMemo(() => generateMockData(), [])
@@ -207,8 +226,39 @@ export default function App() {
       }
       return true
     })
-    return buildGroupedRows(filtered)
-  }, [allData, appliedFilters])
+    const rows = buildGroupedRows(filtered)
+
+    // 按 groupSortState 对每组 detail 排序
+    const state = groupSortState
+    if (Object.keys(state).length > 0) {
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i]
+        if (row.kind !== 'group') continue
+        const sortCfg = state[row.assetType]
+        if (!sortCfg) continue
+
+        // 找到该组所有 detail 行的起止位置
+        const detailStart = i + 1
+        let detailEnd = detailStart
+        while (detailEnd < rows.length && rows[detailEnd].kind === 'detail' && rows[detailEnd].assetType === row.assetType) {
+          detailEnd++
+        }
+        if (detailEnd <= detailStart) continue
+
+        const details = rows.slice(detailStart, detailEnd) as DetailRowData[]
+        const dir = sortCfg.sort === 'desc' ? -1 : 1
+        details.sort((a, b) => {
+          const va = (a as any)[sortCfg.colId] ?? 0
+          const vb = (b as any)[sortCfg.colId] ?? 0
+          if (va === vb) return 0
+          return va > vb ? dir : -dir
+        })
+        rows.splice(detailStart, details.length, ...details)
+      }
+    }
+
+    return rows
+  }, [allData, appliedFilters, groupSortState])
 
   const visibleRows = useMemo(() => {
     return allGroupedRows.filter(row => {
@@ -217,59 +267,32 @@ export default function App() {
     })
   }, [allGroupedRows, expandedGroups])
 
-  const postSortRows = useCallback((params: PostSortRowsParams) => {
-    const sortModel = params.api.getColumnState()
-      .filter((c: any) => c.sort)
-      .map((c: any) => ({ colId: c.colId as string, sort: c.sort as 'asc' | 'desc' }))
-    if (sortModel.length === 0) return
+  // 点击分组行数值列 → 对该组按该列排序
+  const onCellClicked = useCallback((params: CellClickedEvent<Row>) => {
+    const row = params.data as Row | undefined
+    if (!row || row.kind !== 'group') return
 
-    const nodes = params.nodes
-    if (nodes.length === 0) return
+    const colId = params.column.getColId()
+    // 只对数值列响应（排除第一列和文本列）
+    if (!['qtySod', 'qtyIntra', 'qtyEod', 'cost', 'price', 'accruedInt', 'marketValue', 'pnl'].includes(colId)) return
 
-    const groups: Record<string, { groupNode: (typeof nodes)[0]; details: typeof nodes }> = {}
-    const groupOrder: string[] = []
-
-    nodes.forEach((node) => {
-      const row = node.data as Row | undefined
-      if (!row) return
-      if (row.kind === 'group') {
-        groupOrder.push(row.assetType)
-        groups[row.assetType] = { groupNode: node, details: [] }
+    setGroupSortState(prev => {
+      const current = prev[row.assetType]
+      let sort: 'asc' | 'desc' = 'desc'
+      if (current && current.colId === colId) {
+        sort = current.sort === 'desc' ? 'asc' : 'desc'
       }
+      return { ...prev, [row.assetType]: { colId, sort } }
     })
+  }, [])
 
-    nodes.forEach((node) => {
-      const row = node.data as Row | undefined
-      if (!row) return
-      if (row.kind === 'detail' && groups[row.assetType]) {
-        groups[row.assetType].details.push(node)
-      }
+  // 清除某组的排序
+  const clearGroupSort = useCallback((assetType: string) => {
+    setGroupSortState(prev => {
+      const next = { ...prev }
+      delete next[assetType]
+      return next
     })
-
-    const colId = sortModel[0].colId
-    const dir = sortModel[0].sort === 'desc' ? -1 : 1
-
-    Object.values(groups).forEach(g => {
-      g.details.sort((a, b) => {
-        const va = (a.data as any)[colId] ?? 0
-        const vb = (b.data as any)[colId] ?? 0
-        if (va === vb) return 0
-        return va > vb ? dir : -dir
-      })
-    })
-
-    const sorted: typeof nodes = []
-    for (const assetType of groupOrder) {
-      const g = groups[assetType]
-      if (!g) continue
-      sorted.push(g.groupNode)
-      sorted.push(...g.details)
-    }
-
-    sorted.forEach((node, i) => {
-      nodes[i] = node
-    })
-    nodes.length = sorted.length
   }, [])
 
   const columnDefs = useMemo(() => buildColumns(unitDiv), [unitDiv])
@@ -278,18 +301,19 @@ export default function App() {
   const doClear = () => {
     setFilters({ ...defaultFilters })
     setAppliedFilters({ ...defaultFilters })
+    setGroupSortState({})
   }
 
   const groupCount = useMemo(() => allGroupedRows.filter(r => r.kind === 'group').length, [allGroupedRows])
   const detailCount = useMemo(() => allGroupedRows.filter(r => r.kind === 'detail').length, [allGroupedRows])
-  const context = useMemo(() => ({ expandedGroups, setExpandedGroups }), [expandedGroups])
+  const context = useMemo(() => ({ expandedGroups, setExpandedGroups, groupSortState, clearGroupSort }), [expandedGroups, groupSortState, clearGroupSort])
 
   return (
     <div className="app-container">
       <header className="app-header">
         <div>
           <span className="app-title">FICC Position Blotter</span>
-          <span className="app-subtitle">v2.0 — Manual Group Rows</span>
+          <span className="app-subtitle">v2.0 — Click Group Row to Sort</span>
         </div>
         <div className="app-header-right">
           <span>Trading Desk: Global Macro</span>
@@ -337,7 +361,7 @@ export default function App() {
           <span className="toolbar-stat">分组: <strong>{groupCount}</strong> 类</span>
         </div>
         <div className="toolbar-right">
-          <span className="toolbar-hint">手动分组 | 点击列头组内排序 | 虚拟滚动</span>
+          <span className="toolbar-hint">点击分组行数值列 → 该组内排序 | ▲▼ 切换方向</span>
         </div>
       </section>
 
@@ -346,8 +370,8 @@ export default function App() {
           <AgGridReact<Row>
             rowData={visibleRows}
             columnDefs={columnDefs}
-            defaultColDef={{ sortable: true, resizable: true }}
-            postSortRows={postSortRows}
+            defaultColDef={{ sortable: false, resizable: true }}
+            onCellClicked={onCellClicked}
             getRowClass={(p) => p.data?.kind === 'group' ? 'row-group' : 'row-detail'}
             animateRows={true}
             alwaysShowVerticalScroll={true}
