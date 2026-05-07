@@ -136,10 +136,27 @@ function buildColumns(unit: number): ColDef<Row>[] {
 
   const txt = (f: string, h: string, w: number): ColDef<Row> =>
     ({ field: f as keyof Row, headerName: h, width: w, sortable: false, resizable: true,
+      valueFormatter: (p: ValueFormatterParams<Row>) => {
+        let text = (p.value ?? '') as string
+        const row = p.data as Row | undefined
+        if (row?.kind === 'group') {
+          if (!text) text = '—'
+          const sortState = (p.context?.groupSortState as SortState | undefined)?.[row.assetType]
+          if (sortState && sortState.colId === f) {
+            text += sortState.sort === 'desc' ? ' ▼' : ' ▲'
+          }
+        }
+        return text
+      },
       cellClass: (p: CellClassParams<Row>) => {
         const row = p.data as Row | undefined
-        if (row?.kind === 'group' && !(p.value)) return 'cell-dash'
-        return ''
+        const classes: string[] = []
+        if (row?.kind === 'group') {
+          if (!(p.value)) classes.push('cell-dash')
+          const sortState = (p.context?.groupSortState as SortState | undefined)?.[row.assetType]
+          if (sortState && sortState.colId === f) classes.push('sort-active')
+        }
+        return classes.join(' ')
       },
     })
 
@@ -248,10 +265,15 @@ export default function App() {
         const details = rows.slice(detailStart, detailEnd) as DetailRowData[]
         const dir = sortCfg.sort === 'desc' ? -1 : 1
         details.sort((a, b) => {
-          const va = (a as any)[sortCfg.colId] ?? 0
-          const vb = (b as any)[sortCfg.colId] ?? 0
-          if (va === vb) return 0
-          return va > vb ? dir : -dir
+          const va = (a as any)[sortCfg.colId] ?? ''
+          const vb = (b as any)[sortCfg.colId] ?? ''
+          let cmp = 0
+          if (typeof va === 'number' && typeof vb === 'number') {
+            cmp = va - vb
+          } else {
+            cmp = String(va).localeCompare(String(vb), 'zh')
+          }
+          return cmp * dir
         })
         rows.splice(detailStart, details.length, ...details)
       }
@@ -267,14 +289,14 @@ export default function App() {
     })
   }, [allGroupedRows, expandedGroups])
 
-  // 点击分组行数值列 → 对该组按该列排序
+  // 点击分组行任意列（除第一列展开/折叠外）→ 对该组按该列排序
   const onCellClicked = useCallback((params: CellClickedEvent<Row>) => {
     const row = params.data as Row | undefined
     if (!row || row.kind !== 'group') return
 
     const colId = params.column.getColId()
-    // 只对数值列响应（排除第一列和文本列）
-    if (!['qtySod', 'qtyIntra', 'qtyEod', 'cost', 'price', 'accruedInt', 'marketValue', 'pnl'].includes(colId)) return
+    // 第一列留给展开/折叠，其余所有列均可点击排序
+    if (colId === 'assetCode') return
 
     setGroupSortState(prev => {
       const current = prev[row.assetType]
@@ -361,7 +383,7 @@ export default function App() {
           <span className="toolbar-stat">分组: <strong>{groupCount}</strong> 类</span>
         </div>
         <div className="toolbar-right">
-          <span className="toolbar-hint">点击分组行数值列 → 该组内排序 | ▲▼ 切换方向</span>
+          <span className="toolbar-hint">点击分组行任意列 → 该组内排序 | 再次点击切换 ▲▼</span>
         </div>
       </section>
 
