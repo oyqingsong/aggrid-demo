@@ -244,25 +244,25 @@ body {
   padding-right: 8px;
 }
 
-/* master 分组行 */
-.ag-theme-alpine .ag-row.ag-row-level-0 {
+/* 分组行 */
+.ag-theme-alpine .ag-row.row-group {
   background-color: #f1f5f9 !important;
   font-weight: 600;
+  cursor: pointer;
 }
-.ag-theme-alpine .ag-row.ag-row-level-0:hover {
+.ag-theme-alpine .ag-row.row-group:hover {
   background-color: #e2e8f0 !important;
 }
-
-/* detail 区域：移除左右 padding 保证子表列与主表对齐 */
-.ag-theme-alpine .ag-details-row {
-  padding: 0 !important;
-  background: #fafbfc;
+.ag-theme-alpine .ag-row.row-group .ag-cell:first-child {
+  text-align: left;
 }
 
-/* 详情表格行 hover */
-.ag-theme-alpine .ag-details-row .ag-row:hover {
+/* 明细行 hover */
+.ag-theme-alpine .ag-row.row-detail:hover {
   background-color: #f8fafc !important;
 }
+
+/* 去除滚动条最小宽度限制 */
 .ag-body-vertical-scroll-viewport {
   min-width: 0 !important;
 }

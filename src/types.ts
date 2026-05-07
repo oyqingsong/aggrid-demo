@@ -1,12 +1,13 @@
 export interface Position {
   id: number
   assetType: string
-  investType: string
   assetCode: string
   assetName: string
   counterparty: string
+  investType: string
   account: string
   currency: string
+  positionType: string
   qtySod: number
   qtyIntra: number
   qtyEod: number
@@ -17,15 +18,18 @@ export interface Position {
   pnl: number
 }
 
-/** 汇总行 — 与 Position 字段对齐，保证主子表列一致 */
-export interface GroupSummary {
+/** 分组汇总行 */
+export interface GroupRowData {
+  kind: 'group'
   assetType: string
-  /** 对应 detail 的 assetCode 列位置，展示 "XX 汇总" */
+  rowCount: number
   assetCode: string
   counterparty: string
   assetName: string
+  investType: string
   account: string
   currency: string
+  positionType: string
   qtySod: number
   qtyIntra: number
   qtyEod: number
@@ -34,5 +38,11 @@ export interface GroupSummary {
   accruedInt: number
   marketValue: number
   pnl: number
-  rowCount: number
 }
+
+/** 明细行 */
+export interface DetailRowData extends Position {
+  kind: 'detail'
+}
+
+export type Row = GroupRowData | DetailRowData
