@@ -1,5 +1,6 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react'
-import { AgGridReact } from 'ag-grid-react'
+import { AllEnterpriseModule } from 'ag-grid-enterprise'
+import { AgGridReact, AgGridProvider } from 'ag-grid-react'
 import type { ColDef, ICellRendererParams, ValueFormatterParams, CellClassParams, CellClickedEvent } from 'ag-grid-community'
 import { AllCommunityModule, ModuleRegistry, themeQuartz } from 'ag-grid-community'
 import { generateMockData, buildGroupedRows, ALL_ACCOUNTS, ALL_ASSET_TYPES, ALL_INVEST_ACCOUNTS, ASSET_TO_COUNTERPARTY } from './data'
@@ -7,6 +8,8 @@ import type { Row, GroupRowData, DetailRowData } from './types'
 import './ag-overrides.css'
 
 ModuleRegistry.registerModules([AllCommunityModule])
+
+const modules = [AllEnterpriseModule]
 
 // ─── 筛选配置 ────────────────────────────────────────
 interface Filters {
@@ -389,6 +392,7 @@ export default function App() {
 
       <section className="grid-wrapper">
         <div className="ag-theme-alpine grid-inner" style={{ height: '100%' }}>
+        <AgGridProvider modules={modules} licenseKey='AgGridLicense66fwc79n[NORMAL][v0102]_NDA3MDk2NjQwMDAwMA==80908dd5fb71b58d3ce28b2ed320216d'>
           <AgGridReact<Row>
             rowData={visibleRows}
             columnDefs={columnDefs}
@@ -401,6 +405,8 @@ export default function App() {
             theme={myTheme}
             overlayNoRowsTemplate={'<span style="padding:20px;color:#94a3b8;">暂无符合条件的数据</span>'}
           />
+
+        </AgGridProvider>
         </div>
       </section>
     </div>
