@@ -1,4 +1,5 @@
-import { Layout, Typography, Button, Select, Space } from 'antd'
+import { Layout, Typography } from 'antd'
+import { Button, Select, Space } from '@chenhui996/gg-ui'
 import { MoonOutlined, SunOutlined } from '@ant-design/icons'
 
 const { Text } = Typography

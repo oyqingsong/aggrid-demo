@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@chenhui996/gg-ui": "file:../code/gz-ui",
+    "@chenhui996/gg-ui": "^0.0.3",
     "@ant-design/icons": "^6.0.0",
     "antd": "^6.3.6",
     "ag-grid-community": "^35.2.1",

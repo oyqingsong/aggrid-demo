@@ -7,7 +7,7 @@ import { generateMockData, buildGroupedRows, ASSET_TO_COUNTERPARTY } from './dat
 import type { Row, DetailRowData, Filters, SortState } from './types'
 import { buildColumns, UNITS } from './columns'
 import Header from './components/header'
-import { ConfigProvider, theme } from 'antd'
+import { ConfigProvider } from '@chenhui996/gg-ui'
 import FilterBar from './components/FilterBar'
 import Toolbar from './components/Toolbar'
 import './ag-overrides.css'
@@ -54,8 +54,7 @@ export default function App() {
   const themeConfig = useMemo(() => ({
     token: { colorPrimary: primaryColor },
     cssVar: { prefix: 'ant' },
-    algorithm: mode === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
-  }), [primaryColor, mode])
+  }), [primaryColor])
 
   // ── 状态 ──────────────────────────────────────────
   const [unit, setUnit] = useState('1')
@@ -199,7 +198,7 @@ export default function App() {
   const context = useMemo(() => ({ expandedGroups, setExpandedGroups, groupSortState, clearGroupSort }), [expandedGroups, groupSortState, clearGroupSort])
 
   return (
-    <ConfigProvider theme={themeConfig}>
+    <ConfigProvider mode={mode} theme={themeConfig}>
     <div className="app-container">
       <Header
         mode={mode}
