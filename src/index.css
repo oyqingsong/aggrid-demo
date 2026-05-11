@@ -1,1 +1,41 @@
-/* Minimal reset — all real styles in ag-overrides.css */
+/* ─── 主题色变量（引用 Ant Design Design Token CSS 变量）─────── */
+:root {
+  /* 页面布局 */
+  --bg-body: var(--ant-color-bg-layout);
+  --bg-surface: var(--ant-color-bg-container);
+  --bg-header: #1e293b;
+
+  /* ag-grid 分组行（无 antd 对应项） */
+  --bg-group-row: #f1f5f9;
+  --bg-group-row-hover: #e2e8f0;
+
+  /* 滚动条 */
+  --bg-scrollbar-track: var(--ant-color-fill-secondary);
+  --bg-scrollbar-thumb: var(--ant-color-border);
+  --bg-scrollbar-thumb-hover: var(--ant-color-text-quaternary);
+
+  /* 边框 */
+  --border: var(--ant-color-border);
+  --border-input: var(--ant-color-border-secondary);
+
+  /* 文字 */
+  --text-primary: var(--ant-color-text);
+  --text-secondary: var(--ant-color-text-secondary);
+  --text-muted: var(--ant-color-text-quaternary);
+
+  /* 财务语义色 */
+  --color-positive: #16a34a;
+  --color-negative: #dc2626;
+  --color-dash: #94a3b8;
+  --color-sort-active: inherit;
+}
+
+/* ─── 暗色模式（仅少量 ag-grid 专用变量，其余由 Ant Design 管理）─ */
+[data-theme='dark'] {
+  --bg-group-row: #1e293b;
+  --bg-group-row-hover: #334155;
+  --color-positive: #4ade80;
+  --color-negative: #f87171;
+  --color-dash: #64748b;
+  --color-sort-active: #fbbf24;
+}
