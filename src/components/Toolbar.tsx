@@ -1,5 +1,4 @@
-import { Flex, Typography, Divider } from 'antd'
-import { Select } from '@chenhui996/gg-ui'
+import { Flex, Typography, Divider, Select } from 'antd'
 
 const { Text } = Typography
 

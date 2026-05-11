@@ -1,4 +1,4 @@
-import { Form, Select, Input, Button, Space } from '@chenhui996/gg-ui'
+import { Form, Select, Input, Button, Space } from 'antd'
 import { ALL_INVEST_ACCOUNTS, ALL_ACCOUNTS, ALL_ASSET_TYPES } from '../data'
 import type { Filters } from '../types'
 
