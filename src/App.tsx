@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from 'react'
+import { useMemo, useState, useCallback, useEffect } from 'react'
 import { AllEnterpriseModule } from 'ag-grid-enterprise'
 import { AgGridReact, AgGridProvider } from 'ag-grid-react'
 import type { CellClickedEvent } from 'ag-grid-community'
@@ -7,6 +7,7 @@ import { generateMockData, buildGroupedRows, ASSET_TO_COUNTERPARTY } from './dat
 import type { Row, DetailRowData, Filters, SortState } from './types'
 import { buildColumns, UNITS } from './columns'
 import Header from './components/header'
+import { ConfigProvider } from '@chenhui996/gg-ui'
 import FilterBar from './components/FilterBar'
 import Toolbar from './components/Toolbar'
 import './ag-overrides.css'
@@ -19,15 +20,42 @@ const defaultFilters: Filters = {
   investType: [], account: [], assetType: [], counterparty: [], keyword: '',
 }
 
-const myTheme = themeQuartz.withParams({
-  fontSize: '12px', headerFontSize: '12px', rowHeight: 30, headerHeight: 32,
-  wrapperBorder: false, cellHorizontalPadding: 8,
-  borderColor: '#e2e8f0', headerBackgroundColor: '#e2e8f0', headerTextColor: '#334155',
-  oddRowBackgroundColor: '#ffffff',
-})
+const PRIMARY_COLORS = {
+  blue:   '#1677ff',
+  green:  '#00b96b',
+  purple: '#722ed1',
+  orange: '#fa8c16',
+} as const
 
 // ─── App ─────────────────────────────────────────────
 export default function App() {
+  const [mode, setMode] = useState<'light' | 'dark'>('light')
+  const [primaryColor, setPrimaryColor] = useState<string>(PRIMARY_COLORS.blue)
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', mode)
+  }, [mode])
+
+  const myTheme = useMemo(() => themeQuartz.withParams({
+    fontSize: '12px',
+    headerFontSize: '12px',
+    rowHeight: 30,
+    headerHeight: 32,
+    wrapperBorder: false,
+    cellHorizontalPadding: 8,
+    headerBackgroundColor: 'var(--ant-color-bg-elevated)',
+    headerTextColor: 'var(--ant-color-text)',
+    borderColor: 'var(--ant-color-border)',
+    oddRowBackgroundColor: 'var(--ant-color-fill-secondary)',
+    backgroundColor: 'var(--ant-color-bg-container)',
+    foregroundColor: 'var(--ant-color-text)',
+  }), [])
+
+  const themeConfig = useMemo(() => ({
+    token: { colorPrimary: primaryColor },
+    cssVar: { prefix: 'ant' },
+  }), [primaryColor])
+
   // ── 状态 ──────────────────────────────────────────
   const [unit, setUnit] = useState('1')
   const [filters, setFilters] = useState<Filters>({ ...defaultFilters })
@@ -170,8 +198,15 @@ export default function App() {
   const context = useMemo(() => ({ expandedGroups, setExpandedGroups, groupSortState, clearGroupSort }), [expandedGroups, groupSortState, clearGroupSort])
 
   return (
+    <ConfigProvider mode={mode} theme={themeConfig}>
     <div className="app-container">
-      <Header />
+      <Header
+        mode={mode}
+        onToggleMode={() => setMode(m => m === 'light' ? 'dark' : 'light')}
+        primaryColor={primaryColor}
+        onPrimaryColorChange={setPrimaryColor}
+        primaryColorOptions={PRIMARY_COLORS}
+      />
 
       <FilterBar
         filters={filters}
@@ -209,5 +244,6 @@ export default function App() {
         </div>
       </section>
     </div>
+    </ConfigProvider>
   )
 }
