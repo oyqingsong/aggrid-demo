@@ -1,39 +1,96 @@
-/* ─── 主题色变量（引用 Ant Design Design Token CSS 变量）─────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Design Token CSS Variables — explicit light/dark values
+   These are defined at :root so ALL elements can access them.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Light theme (default) ─── */
 :root {
-  /* 页面布局 */
-  --bg-body: var(--ant-color-bg-layout);
-  --bg-surface: var(--ant-color-bg-container);
+  /* Page layout */
+  --bg-body: #f5f5f5;
+  --bg-surface: #ffffff;
+  --bg-elevated: #ffffff;
   --bg-header: #1e293b;
 
-  /* ag-grid 分组行（无 antd 对应项） */
+  /* Text */
+  --text-primary: rgba(0,0,0,0.88);
+  --text-secondary: rgba(0,0,0,0.65);
+  --text-muted: rgba(0,0,0,0.25);
+  --text-header: #ffffff;
+
+  /* Border */
+  --border: #d9d9d9;
+  --border-input: #f0f0f0;
+
+  /* Input & form */
+  --bg-input: #ffffff;
+
+  /* Interactive */
+  --bg-hover: rgba(0,0,0,0.04);
+  --bg-fill-secondary: rgba(0,0,0,0.06);
+
+  /* Tags */
+  --bg-tag: #f5f5f5;
+  --text-tag: rgba(0,0,0,0.65);
+
+  /* Filter menu */
+  --bg-filter-menu: #ffffff;
+
+  /* Buttons */
+  --bg-btn-clear: #ffffff;
+  --text-btn-clear: rgba(0,0,0,0.65);
+  --bg-btn-query: #1677ff;
+  --text-btn-query: #ffffff;
+  --bg-btn-query-hover: #4096ff;
+  --bg-btn-theme-hover: rgba(255,255,255,0.1);
+
+  /* Scrollbar */
+  --bg-scrollbar-track: rgba(0,0,0,0.06);
+  --bg-scrollbar-thumb: #d9d9d9;
+  --bg-scrollbar-thumb-hover: rgba(0,0,0,0.25);
+
+  /* ag-grid group rows */
   --bg-group-row: #f1f5f9;
   --bg-group-row-hover: #e2e8f0;
 
-  /* 滚动条 */
-  --bg-scrollbar-track: var(--ant-color-fill-secondary);
-  --bg-scrollbar-thumb: var(--ant-color-border);
-  --bg-scrollbar-thumb-hover: var(--ant-color-text-quaternary);
-
-  /* 边框 */
-  --border: var(--ant-color-border);
-  --border-input: var(--ant-color-border-secondary);
-
-  /* 文字 */
-  --text-primary: var(--ant-color-text);
-  --text-secondary: var(--ant-color-text-secondary);
-  --text-muted: var(--ant-color-text-quaternary);
-
-  /* 财务语义色 */
+  /* Semantic colors */
   --color-positive: #16a34a;
   --color-negative: #dc2626;
   --color-dash: #94a3b8;
   --color-sort-active: inherit;
 }
 
-/* ─── 暗色模式（仅少量 ag-grid 专用变量，其余由 Ant Design 管理）─ */
+/* ─── Dark theme ─── */
 [data-theme='dark'] {
+  --bg-body: #000000;
+  --bg-surface: #141414;
+  --bg-elevated: #1f1f1f;
+
+  --text-primary: rgba(255,255,255,0.85);
+  --text-secondary: rgba(255,255,255,0.65);
+  --text-muted: rgba(255,255,255,0.25);
+
+  --border: #424242;
+  --border-input: #303030;
+
+  --bg-input: #141414;
+  --bg-hover: rgba(255,255,255,0.08);
+  --bg-fill-secondary: rgba(255,255,255,0.08);
+
+  --bg-tag: #1f1f1f;
+  --text-tag: rgba(255,255,255,0.65);
+
+  --bg-filter-menu: #1f1f1f;
+
+  --bg-btn-clear: #141414;
+  --text-btn-clear: rgba(255,255,255,0.65);
+
+  --bg-scrollbar-track: rgba(255,255,255,0.08);
+  --bg-scrollbar-thumb: #424242;
+  --bg-scrollbar-thumb-hover: rgba(255,255,255,0.25);
+
   --bg-group-row: #1e293b;
   --bg-group-row-hover: #334155;
+
   --color-positive: #4ade80;
   --color-negative: #f87171;
   --color-dash: #64748b;

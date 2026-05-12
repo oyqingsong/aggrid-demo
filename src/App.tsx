@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, useEffect } from 'react'
+import { useMemo, useState, useCallback, useLayoutEffect } from 'react'
 import { AllEnterpriseModule } from 'ag-grid-enterprise'
 import { AgGridReact, AgGridProvider } from 'ag-grid-react'
 import type { CellClickedEvent } from 'ag-grid-community'
@@ -32,7 +32,7 @@ export default function App() {
   const [mode, setMode] = useState<'light' | 'dark'>('light')
   const [primaryColor, setPrimaryColor] = useState<string>(PRIMARY_COLORS.blue)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.documentElement.setAttribute('data-theme', mode)
   }, [mode])
 
@@ -43,13 +43,13 @@ export default function App() {
     headerHeight: 32,
     wrapperBorder: false,
     cellHorizontalPadding: 8,
-    headerBackgroundColor: 'var(--ant-color-bg-elevated)',
-    headerTextColor: 'var(--ant-color-text)',
-    borderColor: 'var(--ant-color-border)',
-    oddRowBackgroundColor: 'var(--ant-color-fill-secondary)',
-    backgroundColor: 'var(--ant-color-bg-container)',
-    foregroundColor: 'var(--ant-color-text)',
-  }), [])
+    headerBackgroundColor: 'var(--bg-elevated)',
+    headerTextColor: 'var(--text-primary)',
+    borderColor: 'var(--border)',
+    oddRowBackgroundColor: 'var(--bg-fill-secondary)',
+    backgroundColor: 'var(--bg-surface)',
+    foregroundColor: 'var(--text-primary)',
+  }), [mode]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const themeConfig = useMemo(() => ({
     token: { colorPrimary: primaryColor },
